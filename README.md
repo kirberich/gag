@@ -7,3 +7,4 @@
 * cairo and pycairo
 * Imagemagic
 * PIL
+* PyYAML
