@@ -21,6 +21,9 @@ class Color(object):
         if not a: a = self.a
         return Color(r,g,b,a)
 
+    def __repr__(self):
+        return 'Color object: (%s,%s,%s,%s)' % (self.r, self.g, self.b, self.a)
+
 class Gui(object):
     def __init__(self, width = 640, height = 480, caption = "DisplayTest", textureDirectory = "textures", virtual_width = None, virtual_height = None):
         """ Initialize a pygame window. This is only for early testing, there probably won't be a gui later. """
