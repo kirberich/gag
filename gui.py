@@ -42,6 +42,7 @@ class Gui(object):
         self.cairo_surface = cairo.ImageSurface.create_for_data(data, cairo.FORMAT_ARGB32, width, height, width * 4)
         self.cairo_context = cairo.Context(self.cairo_surface)  
         self.cairo_context.set_antialias(cairo.ANTIALIAS_SUBPIXEL)
+
         self.screen = screen
         self.textureDirectory = textureDirectory
         self.width = width
@@ -79,11 +80,30 @@ class Gui(object):
         self.apply_colors(fill_color, stroke_color)
         self.cairo_context.close_path()
 
-    def draw_pixel(self, x, y, color):
+    def draw_pixel(self, x, y, color = None):
         """ Draw a virtual pixel. The size of the pixel is determined by Gui.virtual_width and Gui.virtual_height """
         self.cairo_context.rectangle(x * self.pixel_width, y * self.pixel_height, self.pixel_width, self.pixel_height)        
-        self.set_color(color)
+        if color: self.set_color(color)
         self.cairo_context.fill()
+        self.cairo_context.new_path()
+
+    def draw_pixels(self, pixels):
+        for pixel in pixels:
+            self.draw_pixel(*pixel)
+
+    def draw_polygon(self, coordinates, fill_color = None, stroke_color = None):
+        """ Draw an n-sided polygon """
+        if len(coordinates) < 3: raise Exception("Polygons need to have at least three points")
+        self.cairo_context.move_to( coordinates[0][0], coordinates[0][1] )
+        for (x,y) in coordinates[1:]:
+            self.cairo_context.line_to(x,y)
+        self.apply_colors(fill_color, stroke_color)
+
+    def draw_text(self, x, y, text, color = None):
+        self.cairo_context.move_to(x,y)
+        if color: self.set_color(color)
+        self.cairo_context.show_text(text)
+        self.cairo_context.close_path()
 
     def apply_colors(self, fill_color, stroke_color):
         """ Apply fill and stroke colors to the current path """
@@ -94,6 +114,8 @@ class Gui(object):
             self.set_color(stroke_color)
             self.cairo_context.stroke()
 
+        self.cairo_context.new_path()
+
     def set_color(self, color):
         self.cairo_context.set_source_rgba(color.r, color.g, color.b, color.a)
 
@@ -102,6 +124,29 @@ class Gui(object):
             newly drawn things and is kind of useless.
         """
         self.cairo_context.rotate(angle)
+
+    def reverse_rotate(self, angle):
+        self.rotate(-angle)
+
+    def scale(self, amount):
+        self.cairo_context.scale(amount, amount)
+
+    def reverse_scale(self, amount):
+        self.scale(1.0 / amount)
+
+    def translate(self, x, y):
+        self.cairo_context.translate(x, y)
+
+    def reverse_translate(self, x, y):
+        self.translate(-x, -y)
+
+    def transform(self, translate_x = 0, translate_y = 0, scale = 1):
+        self.translate(translate_x, translate_y)
+        self.scale(scale)
+
+    def reverse_transform(self, translate_x = 0, translate_y = 0, scale = 1):
+        self.cairo_context.scale(1.0 / scale, 1.0 / scale)
+        self.cairo_context.translate(translate_x * -1, translate_y * -1)
 
     def from_degrees(self, degrees):
         return degrees * math.pi / 180.0
