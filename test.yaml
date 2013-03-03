@@ -32,19 +32,43 @@
   - scale:
       kwargs:
         amount: 'scale=1'
-  - pixel: [0,-2, 'c(red=1,0,0)']
+  - pixel: [0,-2, 'c(red=1,green=0,0)']
   - pixel: [0,-1]
   - pixel: [0,0]
   - pixel: [1,0]
   - L: 
-      args: [2.2,0,1]
+      args: [0.005,0.005,1]
       kwargs:
         vars:
-          scale: '*=0.8'
-          red: '*=0.8'
+          scale: '0.99'
+          #red: '*=rand(0.95,0.98)'
+          red: '-=0.01'
+          green: 'rand(0,0.1)'
         stop_recursion:
-          max_depth: 10
-  - pixel: [2,0]
+          max_depth: 100
+  #- pixel: [2,0, 'c(red=1,0,0)']
+
+- recursiontest:
+  - scale: ['scale=1']
+  - rotate: ['rotation=0']
+  - pixel: [-0.5, -5.5, 'c(red=1,0.2,0,0.2)']
+  - pixel: [-0.5, -4.5]
+  - pixel: [-0.5, -3.5]
+  - pixel: [-0.5, -2.5]
+  - pixel: [-0.5, -1.5]
+  - pixel: [-0.5, -0.5]
+  - recursiontest:
+      args: [0,0,1]
+      kwargs:
+        vars:
+          rotation: '-3'
+          scale: 'rand(0.95,1.05)'
+          red: '*=rand(0.96,1)'
+        stop_recursion:
+          max_depth: 120
+
+- drawrecursiontest:
+  - recursiontest: [320,240,35]
 
 - U:
   - translate: [15,0]
@@ -52,11 +76,11 @@
   - pixels: [ [[0,0], [0,1,'c(0.8,0.5,0)'], [0,2], [1,2], [2,2], [2,1], [2,0]] ]
 
 - text:
-  - L: [200,100, 50]
-  - U: [20,10, 0.4]
-  - translate: [200,200]
+  - L: [200,300, 100]
+  #- U: [20,10, 0.4]
+  #- translate: [200,200]
   #- scale: [5]
-  - text: 
-      args: [0,0,'hey there']
-      kwargs: 
-       fill_color: 'c(1,0,1)'
+  #- text: 
+  #    args: [0,0,'hey there']
+  #    kwargs: 
+  #     fill_color: 'c(1,0,1)'
