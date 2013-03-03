@@ -123,10 +123,10 @@ class Gui(object):
         """ Rotates the transformation matrix, this only has an effect on 
             newly drawn things and is kind of useless.
         """
-        self.cairo_context.rotate(angle)
+        self.cairo_context.rotate(self.from_degrees(angle))
 
     def reverse_rotate(self, angle):
-        self.rotate(-angle)
+        self.rotate(self.from_degrees(-angle))
 
     def scale(self, amount=1):
         self.cairo_context.scale(amount, amount)
