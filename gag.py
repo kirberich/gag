@@ -1,6 +1,7 @@
 import gui
 import random
 from parser import GagParser
+import time
 
 if __name__ == "__main__":
     test_gui = gui.Gui()
@@ -15,12 +16,12 @@ if __name__ == "__main__":
     parser = GagParser(f.read(), test_gui)
     parser.parse()
 
-    loop_count = 0
+    frame = 0
     try:
         while True:
             #if not loop_count % 100: test_gui.fill(white)
             time_passed = test_gui.clock.tick(50)
-            print "%s fps" % (1000/time_passed)
+            #print "%s fps" % (1000/time_passed)
 
             #test_gui.draw_circle((random.randint(0,640), random.randint(0,480)), 50, fill_color = gray, stroke_color = gray.replace(r=1))
             #test_gui.draw_rect(random.randint(0,640), random.randint(0,480), 15, 15, fill_color = blue)#, stroke_color = blue.replace(a=1))
@@ -29,12 +30,17 @@ if __name__ == "__main__":
             #test_gui.draw_polygon( [(400,400), (420,400), (420,420), (400,430)], red)
             #test_gui.draw_text(300,300,"hallo", red)
 
+            test_gui.fill(white)
             #parser.execute('bighouse')
             #parser.execute('town')
-            parser.execute('text')
+            #parser.execute('text')
+            parser.execute('drawrecursiontest')
 
             test_gui.update()
 
-            loop_count += 1
+            test_gui.cairo_surface.write_to_png("frame-%s.png" % str(frame).zfill(3))
+
+            frame += 1
+            #time.sleep(1)
     except KeyboardInterrupt:
         test_gui.cairo_surface.write_to_png("example.png")
