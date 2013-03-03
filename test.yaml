@@ -27,25 +27,36 @@
   - house: [350,350,0.5]
 
 - L:
-  - rotate: ['rand(1)']
+  #- rotate: ['rand(1)']
   #- translate: ['rand(-20,20)', 'rand(-20,20)']
-  - scale: [50]
-  - pixel: [0,-2, 'c(1,0,0)']
+  - scale:
+      kwargs:
+        amount: 'scale=1'
+  - pixel: [0,-2, 'c(red=1,0,0)']
   - pixel: [0,-1]
   - pixel: [0,0]
   - pixel: [1,0]
+  - L: 
+      args: [2.2,0,1]
+      kwargs:
+        vars:
+          scale: '*=0.8'
+          red: '*=0.8'
+        stop_recursion:
+          max_depth: 10
+  - pixel: [2,0]
 
 - U:
   - translate: [15,0]
-  - scale: [5]
+  #- scale: [5]
   - pixels: [ [[0,0], [0,1,'c(0.8,0.5,0)'], [0,2], [1,2], [2,2], [2,1], [2,0]] ]
 
 - text:
-  - L: [200,100, 0.4]
+  - L: [200,100, 50]
   - U: [20,10, 0.4]
   - translate: [200,200]
-  - scale: [5]
+  #- scale: [5]
   - text: 
       args: [0,0,'hey there']
       kwargs: 
-       color: 'c(1,0,1)'
+       fill_color: 'c(1,0,1)'

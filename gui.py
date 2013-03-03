@@ -42,6 +42,7 @@ class Gui(object):
         self.cairo_surface = cairo.ImageSurface.create_for_data(data, cairo.FORMAT_ARGB32, width, height, width * 4)
         self.cairo_context = cairo.Context(self.cairo_surface)  
         self.cairo_context.set_antialias(cairo.ANTIALIAS_SUBPIXEL)
+        self.cairo_context.set_line_width(0.01)
 
         self.screen = screen
         self.textureDirectory = textureDirectory
@@ -99,11 +100,10 @@ class Gui(object):
             self.cairo_context.line_to(x,y)
         self.apply_colors(fill_color, stroke_color)
 
-    def draw_text(self, x, y, text, color = None):
+    def draw_text(self, x, y, text, fill_color = None, stroke_color = None):
         self.cairo_context.move_to(x,y)
-        if color: self.set_color(color)
-        self.cairo_context.show_text(text)
-        self.cairo_context.close_path()
+        self.cairo_context.text_path(text)
+        self.apply_colors(fill_color, stroke_color)
 
     def apply_colors(self, fill_color, stroke_color):
         """ Apply fill and stroke colors to the current path """
@@ -128,10 +128,10 @@ class Gui(object):
     def reverse_rotate(self, angle):
         self.rotate(-angle)
 
-    def scale(self, amount):
+    def scale(self, amount=1):
         self.cairo_context.scale(amount, amount)
 
-    def reverse_scale(self, amount):
+    def reverse_scale(self, amount=1):
         self.scale(1.0 / amount)
 
     def translate(self, x, y):

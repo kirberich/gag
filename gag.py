@@ -29,8 +29,8 @@ if __name__ == "__main__":
             #test_gui.draw_polygon( [(400,400), (420,400), (420,420), (400,430)], red)
             #test_gui.draw_text(300,300,"hallo", red)
 
-            parser.execute('bighouse')
-            parser.execute('town')
+            #parser.execute('bighouse')
+            #parser.execute('town')
             parser.execute('text')
 
             test_gui.update()
