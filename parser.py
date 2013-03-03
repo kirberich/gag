@@ -31,6 +31,11 @@ class Command(object):
         if var_name in self.vars_to_replace: return self.vars_to_replace[var_name]
         return self.variables[var_name]
 
+    def eval_partial(self, arg):
+        """ Evaluates arg if it is callable, simply returns it if it is not. """
+        if callable(arg): return arg()
+        return arg
+
     def create_color(self, *args):
         args = list(args)
         arg_index = 0
@@ -71,14 +76,26 @@ class Command(object):
             return value
 
         # String-encoded numbers
-        m = re.match(r'^\d*\.?\d+$', arg)
+        m = re.match(r'^-?\d*\.?\d+$', arg)
         if m:
             return float(arg)
 
         # Value multiplication
         m = re.match(r'^ *\*= *(.+)$', arg)
         if m:
-            return lambda x: x * self.parse_args(m.groups()[0])
+            return lambda x: x * self.eval_partial(self.parse_args(m.groups()[0]))
+        # Value division
+        m = re.match(r'^ *\/= *(.+)$', arg)
+        if m:
+            return lambda x: float(x) / self.eval_partial(self.parse_args(m.groups()[0]))
+        # Value substraction
+        m = re.match(r'^ *\-= *(.+)$', arg)
+        if m:
+            return lambda x: x - self.eval_partial(self.parse_args(m.groups()[0]))
+        # Value addition
+        m = re.match(r'^ *\+= *(.+)$', arg)
+        if m:
+            return lambda x: x + self.eval_partial(self.parse_args(m.groups()[0]))
 
         # Random values
         m = re.match(r'^rand\((-?\d*\.?\d+)(?: *, *(-?\d*\.?\d+))?\)', arg)
@@ -147,6 +164,7 @@ class GagParser(object):
             Drawing functions can be primitives, transformations or sub-commands
         """
         reverse_transformations = []
+        restore_vars = {}
         for sub_command in command.sub_commands:
             if sub_command['name'] in PRIMITIVES: 
                 # Draw primitive shapes
@@ -181,18 +199,25 @@ class GagParser(object):
                     evaluated_args, evaluated_kwargs = self.evaluate_callable_args(sub_command['args'], sub_command['kwargs'])
 
                     # Check recursion parameters
+                    command.recursion_depth += 1
                     if sub_command['name'] == command.name:
                         if 'stop_recursion' in evaluated_kwargs:
                             if 'max_depth' in evaluated_kwargs['stop_recursion']:
                                 if command.recursion_depth >= evaluated_kwargs['stop_recursion']['max_depth'] -1: 
                                     command.recursion_depth = 0
                                     continue
-                            command.recursion_depth += 1
                             del evaluated_kwargs['stop_recursion']
                         if 'vars' in evaluated_kwargs:
+                            # Defined variables can be replaced for the next recursion level
+                            # Afterwards though, they need to be restored to their former value
+                            restore_vars = {}
                             for to_replace, value in evaluated_kwargs['vars'].items():
+                                restore_vars[to_replace] = command.vars_to_replace[to_replace]
                                 if callable(value): 
-                                    value = value(command.vars_to_replace[to_replace])
+                                    try: 
+                                        value = value(command.vars_to_replace[to_replace])
+                                    except:
+                                        value = value()
                                 command.vars_to_replace[to_replace] = value
                             del evaluated_kwargs['vars']
 
@@ -205,16 +230,22 @@ class GagParser(object):
                                 kwargs[var] = command.vars_to_replace[var]
                         yield (draw_func, args, kwargs)
 
-                    # Reverse the subcommand transformation
+                    # Revert the subcommand transformation
                     self.gui.reverse_transform(*evaluated_args)
+
+                    # Revert variable assignments
+                    for to_restore in restore_vars:
+                        command.vars_to_replace[to_restore] = restore_vars[to_restore]
                 else:    
                     raise Exception("Illegal sub_command")
+        # Reset recursive variable definitions
+        command.vars_to_replace = copy(command.variables)
+
         # Reverse all applied transformations
         reverse_transformations.reverse()
         for (func, args, kwargs) in reverse_transformations:
             func(self.gui, *args, **kwargs)
-        # Reset recursive variable definitions
-        command.vars_to_replace = copy(command.variables)
+
 
     def evaluate_callable_args(self, args, kwargs):
         """ For arguments that are callable, evaluate them and replace them with the return value.
